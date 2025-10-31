@@ -7,6 +7,7 @@ import com.incident.app.model.Incident;
 import java.util.List;
 import java.util.Map;
 
+@CrossOrigin(origins = "*")
 @RestController
 @RequestMapping("/api/incidents")
 public class IncidentController {
