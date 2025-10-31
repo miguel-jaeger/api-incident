@@ -2,9 +2,12 @@ package com.incident.app.service;
 import java.time.LocalDateTime;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import com.incident.app.model.Incident;
 import com.incident.app.repository.IncidentRepository;
 
+@Service
 public class IncidentService {
     @Autowired
     IncidentRepository repo;
