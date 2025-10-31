@@ -34,4 +34,13 @@ public class IncidentService {
     public List<Incident> listAll() {
         return repo.findAll();
     }
+
+    @SuppressWarnings("null")
+    public void delete(Long id) {
+        repo.deleteById(id);
+    }
+    @SuppressWarnings("null")
+    public Incident findById(Long id) {
+        return repo.findById(id).orElseThrow();
+    }
 }
