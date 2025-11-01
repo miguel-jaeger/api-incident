@@ -12,21 +12,26 @@ public class IncidentService {
     @Autowired
     IncidentRepository repo;
 
-    public Incident create(String title, String desc, String severity) {
+    public Incident create(String title, String desc, String severity, String message) {
         Incident inc = new Incident();
         inc.setTitle(title);
         inc.setDescription(desc);
         inc.setSeverity(severity);
         inc.setStatus("OPEN");
+        inc.setMessage(message);
+
         inc.setCreatedAt(LocalDateTime.now());
         inc.setUpdatedAt(LocalDateTime.now());
         return repo.save(inc);
     }
 
-    public Incident changeStatus(Long id, String newStatus) {
+    public Incident changeStatus(Long id, String newStatus, String message) {
         @SuppressWarnings("null")
         Incident inc = repo.findById(id).orElseThrow();
         inc.setStatus(newStatus);
+        if (newStatus=="Closed") {
+            inc.setMessage(message);
+        }
         inc.setUpdatedAt(LocalDateTime.now());
         return repo.save(inc);
     }
