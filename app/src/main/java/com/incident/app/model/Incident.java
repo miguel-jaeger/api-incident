@@ -11,6 +11,7 @@ public class Incident {
     private Long id;
     private String title;
     private String description;
+    private String message;
     private String status; // por ejemplo: OPEN, IN_PROGRESS, RESOLVED, CLOSED
     private String severity;
     private LocalDateTime createdAt;
@@ -57,5 +58,11 @@ public class Incident {
     }
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+    public String getMessage() {
+        return message;
+    }
+    public void setMessage(String message) {
+        this.message = message;
     }
 }
