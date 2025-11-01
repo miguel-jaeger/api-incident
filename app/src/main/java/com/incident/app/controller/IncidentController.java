@@ -16,12 +16,12 @@ public class IncidentController {
 
     @PostMapping()
     public Incident create(@RequestBody Map<String, String> body) {
-        return svc.create(body.get("title"), body.get("description"), body.get("severity"));
+        return svc.create(body.get("title"), body.get("description"), body.get("severity"),body.get("message"));
     }
 
     @PatchMapping("/{id}/status")
     public Incident updateStatus(@PathVariable Long id, @RequestBody Map<String, String> body) {
-        return svc.changeStatus(id, body.get("status"));
+        return svc.changeStatus(id, body.get("status"), body.get("message"));
     }
 
     @GetMapping()
