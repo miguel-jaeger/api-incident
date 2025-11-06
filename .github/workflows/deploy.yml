@@ -18,6 +18,10 @@ jobs:
         with:
           java-version: '11'
           distribution: 'temurin'
+
+      - name: Give execute permission to mvnw
+        working-directory: ./app
+        run: chmod +x mvnw
       
       - name: Build with Maven
         run: ./mvnw clean install -DskipTests
