@@ -1,0 +1,59 @@
+package com.incident.app.config;
+
+import org.springframework.http.MediaType;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+@Controller
+public class DocsController {
+
+    @GetMapping(value = "/docs", produces = MediaType.TEXT_HTML_VALUE)
+    @ResponseBody
+    public String docs() {
+        return """
+            <!DOCTYPE html>
+            <html lang="es">
+            <head>
+                <meta charset="UTF-8">
+                <title>API de Gestión de Incidentes - Docs</title>
+                <link rel="stylesheet" type="text/css" href="/swagger-ui/swagger-ui.css" />
+                <link rel="icon" type="image/png" href="/swagger-ui/favicon-32x32.png" sizes="32x32" />
+                <link rel="icon" type="image/png" href="/swagger-ui/favicon-16x16.png" sizes="16x16" />
+                <style>
+                    html { box-sizing: border-box; overflow: -moz-scrollbars-vertical; overflow-y: scroll; }
+                    *, *:before, *:after { box-sizing: inherit; }
+                    body { margin: 0; background: #fafafa; }
+                </style>
+            </head>
+            <body>
+                <div id="swagger-ui"></div>
+                <script src="/swagger-ui/swagger-ui-bundle.js" charset="UTF-8"></script>
+                <script src="/swagger-ui/swagger-ui-standalone-preset.js" charset="UTF-8"></script>
+                <script>
+                window.onload = function() {
+                    window.ui = SwaggerUIBundle({
+                        url: "/v3/api-docs",
+                        dom_id: '#swagger-ui',
+                        deepLinking: true,
+                        presets: [
+                            SwaggerUIBundle.presets.apis,
+                            SwaggerUIStandalonePreset
+                        ],
+                        plugins: [
+                            SwaggerUIBundle.plugins.DownloadUrl
+                        ],
+                        layout: "StandaloneLayout"
+                    });
+                };
+                </script>
+            </body>
+            </html>
+            """;
+    }
+
+    @GetMapping("/")
+    public String index() {
+        return "redirect:/docs";
+    }
+}
