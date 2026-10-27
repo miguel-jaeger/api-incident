@@ -33,7 +33,7 @@ public class DocsController {
                 <script>
                 window.onload = function() {
                     window.ui = SwaggerUIBundle({
-                        url: "/v3/api-docs",
+                        url: "/docs",
                         dom_id: '#swagger-ui',
                         deepLinking: true,
                         presets: [
