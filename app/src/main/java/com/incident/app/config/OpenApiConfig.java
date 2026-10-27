@@ -20,7 +20,7 @@ public class OpenApiConfig {
                 .title("API de Gestión de Incidentes")
                 .version("1.0.0")
                 .description("Documentación oficial y entorno de pruebas para los endpoints de la API.")
-                .termsOfService("https://api-incident.onrender.com/docs)
+                .termsOfService("https://api-incident.onrender.com/docs")
                 .contact(new Contact()
                     .name("Soporte Técnico")
                     .email("miguel.jaeger@gmail.com")
