@@ -9,10 +9,12 @@ public class SwaggerRedirectConfig implements WebMvcConfigurer {
 
     @Override
     public void addViewControllers(ViewControllerRegistry registry) {
-        // Al acceder a /docs, despacha internamente el index.html sin cambiar la barra de direcciones
-        registry.addViewController("/docs").setViewName("forward:/swagger-ui/index.html");
+        // La raíz sirve directamente la página de Swagger (static/index.html),
+        // por lo que la URL del navegador se mantiene limpia.
+        registry.addViewController("/docs").setViewName("forward:/index.html");
 
-        // (Opcional) Si alguien entra a la raíz "/", redirige a "/docs"
-        registry.addRedirectViewController("/", "/docs");
+        // Si alguien entra por las rutas internas de Swagger, vuelve a la raíz
+        registry.addRedirectViewController("/swagger-ui.html", "/");
+        registry.addRedirectViewController("/swagger-ui/index.html", "/");
     }
 }
