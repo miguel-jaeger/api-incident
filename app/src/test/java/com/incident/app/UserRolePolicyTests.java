@@ -33,7 +33,7 @@ class UserRolePolicyTests {
         String username = "role." + UUID.randomUUID().toString().substring(0, 8);
 
         // El registro público no puede crear administradores
-        mockMvc.perform(post("/api/auth/users")
+        mockMvc.perform(post("/api/users")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(Map.of(
                     "username", username,
@@ -44,7 +44,7 @@ class UserRolePolicyTests {
                 ))))
             .andExpect(status().isForbidden());
 
-        MvcResult registered = mockMvc.perform(post("/api/auth/users")
+        MvcResult registered = mockMvc.perform(post("/api/users")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(Map.of(
                     "username", username,
@@ -59,18 +59,18 @@ class UserRolePolicyTests {
         long userId = mapper.readTree(registered.getResponse().getContentAsString()).get("id").asLong();
         String userToken = login(username, "clave123");
 
-        mockMvc.perform(patch("/api/auth/users/{id}/role", userId)
+        mockMvc.perform(patch("/api/users/{id}/role", userId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"role\":\"SUPPORT\"}"))
             .andExpect(status().isUnauthorized());
 
-        mockMvc.perform(patch("/api/auth/users/{id}/role", userId)
+        mockMvc.perform(patch("/api/users/{id}/role", userId)
                 .header("Authorization", "Bearer " + userToken)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"role\":\"SUPPORT\"}"))
             .andExpect(status().isForbidden());
 
-        mockMvc.perform(patch("/api/auth/users/{id}/role", userId)
+        mockMvc.perform(patch("/api/users/{id}/role", userId)
                 .header("Authorization", "Bearer " + adminToken)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"role\":\"ROOT\"}"))
@@ -85,7 +85,7 @@ class UserRolePolicyTests {
 
         long incidentId = mapper.readTree(created.getResponse().getContentAsString()).get("id").asLong();
 
-        mockMvc.perform(patch("/api/auth/users/{id}/role", userId)
+        mockMvc.perform(patch("/api/users/{id}/role", userId)
                 .header("Authorization", "Bearer " + adminToken)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"role\":\"ADMIN\"}"))

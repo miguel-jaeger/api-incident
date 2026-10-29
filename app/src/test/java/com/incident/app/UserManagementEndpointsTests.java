@@ -34,7 +34,7 @@ class UserManagementEndpointsTests {
         String operatorToken = login("operador", "operador123");
         String username = "user." + UUID.randomUUID().toString().substring(0, 8);
 
-        MvcResult registered = mockMvc.perform(post("/api/auth/users")
+        MvcResult registered = mockMvc.perform(post("/api/users")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(Map.of(
                     "username", username,
@@ -66,55 +66,66 @@ class UserManagementEndpointsTests {
             throw new AssertionError("La lista de usuarios no contiene al usuario de prueba");
         }
 
-        mockMvc.perform(get("/api/auth/users/{id}", userId)
+        mockMvc.perform(get("/api/users/{id}", userId)
                 .header("Authorization", "Bearer " + operatorToken))
             .andExpect(status().isForbidden());
 
-        mockMvc.perform(get("/api/auth/users/{id}", userId)
+        mockMvc.perform(get("/api/users/{id}", userId)
                 .header("Authorization", "Bearer " + adminToken))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.id").value(userId))
             .andExpect(jsonPath("$.username").value(username));
 
-        mockMvc.perform(get("/api/auth/users/{id}", 999999)
+        mockMvc.perform(get("/api/users/{id}", 999999)
                 .header("Authorization", "Bearer " + adminToken))
             .andExpect(status().isNotFound());
 
-        mockMvc.perform(patch("/api/auth/roles")
+        mockMvc.perform(patch("/api/users/{id}/role", userId)
                 .header("Authorization", "Bearer " + operatorToken)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(mapper.writeValueAsString(Map.of("userId", userId, "role", "SUPERVISOR"))))
+                .content("{\"role\":\"SUPERVISOR\"}"))
             .andExpect(status().isForbidden());
 
-        mockMvc.perform(patch("/api/auth/roles")
+        mockMvc.perform(patch("/api/users/{id}/role", userId)
                 .header("Authorization", "Bearer " + adminToken)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(mapper.writeValueAsString(Map.of("userId", userId, "role", "ROOT"))))
+                .content("{\"role\":\"ROOT\"}"))
             .andExpect(status().isBadRequest());
 
-        mockMvc.perform(patch("/api/auth/roles")
+        mockMvc.perform(patch("/api/users/{id}/role", userId)
                 .header("Authorization", "Bearer " + adminToken)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(mapper.writeValueAsString(Map.of("userId", userId, "role", "SUPERVISOR"))))
+                .content("{\"role\":\"SUPERVISOR\"}"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.id").value(userId))
             .andExpect(jsonPath("$.role").value("SUPERVISOR"));
+    }
 
-        // Alias: id + newRole
+    @Test
+    void lasRutasAntiguasDeUsuariosYaNoExisten() throws Exception {
+        String adminToken = login("admin", "admin123");
+
+        mockMvc.perform(get("/api/auth/users/1")
+                .header("Authorization", "Bearer " + adminToken))
+            .andExpect(status().isNotFound());
+
+        mockMvc.perform(patch("/api/auth/users/1/role")
+                .header("Authorization", "Bearer " + adminToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"role\":\"SUPERVISOR\"}"))
+            .andExpect(status().isNotFound());
+
         mockMvc.perform(patch("/api/auth/roles")
                 .header("Authorization", "Bearer " + adminToken)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(mapper.writeValueAsString(Map.of("id", userId, "newRole", "SUPPORT"))))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.role").value("SUPPORT"));
+                .content("{\"userId\":1,\"role\":\"SUPERVISOR\"}"))
+            .andExpect(status().isNotFound());
 
-        // Alias: username + role
-        mockMvc.perform(patch("/api/auth/roles")
+        mockMvc.perform(patch("/api/roles")
                 .header("Authorization", "Bearer " + adminToken)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(mapper.writeValueAsString(Map.of("username", username, "role", "OPERATOR"))))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.role").value("OPERATOR"));
+                .content("{\"userId\":1,\"role\":\"SUPERVISOR\"}"))
+            .andExpect(status().isNotFound());
     }
 
     private String login(String username, String password) throws Exception {

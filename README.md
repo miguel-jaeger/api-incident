@@ -13,23 +13,27 @@ La autenticación se realiza contra la tabla `users` de SQLite. Las contraseñas
 almacenan con hash BCrypt y la tabla se crea automáticamente al iniciar la
 aplicación (`spring.jpa.hibernate.ddl-auto=update`).
 
-### Endpoints
+### Endpoints de autenticación
 
 | Método | Ruta | Descripción | Autorización |
 |--------|------|-------------|--------------|
 | POST | `/api/auth/login` | Inicia sesión con usuario o correo | Público |
-| POST | `/api/auth/users` | Registra un nuevo usuario | Público, solo crea `OPERATOR`; `ADMIN` puede asignar otros roles |
-| GET | `/api/users` | Lista todos los usuarios | Solo `ADMIN` |
-| GET | `/api/auth/users/{id}` | Obtiene un usuario por id | Solo `ADMIN` |
-| PATCH/PUT/POST | `/api/auth/roles` | Cambia el rol de un usuario | Solo `ADMIN` |
-| PATCH | `/api/auth/users/{id}/role` | Alias para cambiar el rol | Solo `ADMIN` |
 | GET | `/api/auth/me` | Devuelve el usuario del token actual | Token válido |
 | POST | `/api/auth/logout` | Cierra la sesión del token actual | Token válido |
+
+## Usuarios
+
+| Método | Ruta | Descripción | Autorización |
+|--------|------|-------------|--------------|
+| GET | `/api/users` | Lista todos los usuarios | Solo `ADMIN` |
+| POST | `/api/users` | Registra un nuevo usuario | Público, solo crea `OPERATOR`; `ADMIN` puede asignar otros roles |
+| GET | `/api/users/{id}` | Obtiene un usuario por id | Solo `ADMIN` |
+| PATCH | `/api/users/{id}/role` | Cambia el rol de un usuario | Solo `ADMIN` |
 
 Ejemplo de registro:
 
 ```json
-POST /api/auth/users
+POST /api/users
 {
   "username": "nuevo.usuario",
   "name": "Nuevo Usuario",
@@ -44,18 +48,17 @@ Roles permitidos: `ADMIN`, `SUPERVISOR`, `OPERATOR`, `SUPPORT`.
 Ejemplo para cambiar el rol de un usuario (solo `ADMIN`):
 
 ```json
-PATCH /api/auth/roles
+PATCH /api/users/5/role
 Authorization: Bearer utp-token-...
 
 {
-  "userId": 5,
   "role": "SUPERVISOR"
 }
 ```
 
-También se aceptan `id` en lugar de `userId`, `username` en lugar del id y
-`newRole` en lugar de `role`. El cambio se aplica de inmediato, incluso sobre
-tokens ya emitidos para ese usuario.
+El cambio se aplica de inmediato, incluso sobre tokens ya emitidos para ese
+usuario. `PATCH /api/users/{id}/role` es la única vía para actualizar el rol; no
+existen rutas duplicadas bajo `/api/auth`.
 
 ### Usuarios iniciales
 

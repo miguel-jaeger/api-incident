@@ -8,10 +8,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import com.incident.app.dto.RegisterUserRequest;
 import com.incident.app.dto.UserResponse;
 import com.incident.app.model.User;
 import com.incident.app.service.AuthSessionService;
 import com.incident.app.service.UserService;
+
+import jakarta.persistence.EntityNotFoundException;
 
 @CrossOrigin(origins = "*")
 @RestController
@@ -26,13 +29,15 @@ public class UserController {
         this.sessionService = sessionService;
     }
 
+    // ====== CONSULTA DE USUARIOS ======
+
     @GetMapping
     public ResponseEntity<?> all(@RequestHeader(value = "Authorization", required = false) String authHeader) {
         Optional<User> sessionUser = sessionService.findByAuthorizationHeader(authHeader);
         if (sessionUser.isEmpty()) {
             return error(HttpStatus.UNAUTHORIZED, "Debes iniciar sesión para consultar usuarios.");
         }
-        if (!"ADMIN".equalsIgnoreCase(sessionUser.get().getRole())) {
+        if (!isAdmin(sessionUser)) {
             return error(HttpStatus.FORBIDDEN, "Solo el administrador puede consultar usuarios.");
         }
 
@@ -40,6 +45,95 @@ public class UserController {
             .map(UserResponse::from)
             .toList();
         return ResponseEntity.ok(users);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getById(
+            @PathVariable Long id,
+            @RequestHeader(value = "Authorization", required = false) String authHeader) {
+
+        Optional<User> sessionUser = sessionService.findByAuthorizationHeader(authHeader);
+        if (sessionUser.isEmpty()) {
+            return error(HttpStatus.UNAUTHORIZED, "Debes iniciar sesión para consultar usuarios.");
+        }
+        if (!isAdmin(sessionUser)) {
+            return error(HttpStatus.FORBIDDEN, "Solo el administrador puede consultar usuarios.");
+        }
+
+        try {
+            return ResponseEntity.ok(UserResponse.from(userService.findById(id)));
+        } catch (EntityNotFoundException e) {
+            return error(HttpStatus.NOT_FOUND, e.getMessage());
+        }
+    }
+
+    // ====== CREACIÓN DE USUARIOS ======
+
+    @PostMapping
+    public ResponseEntity<?> create(
+            @RequestBody RegisterUserRequest req,
+            @RequestHeader(value = "Authorization", required = false) String authHeader) {
+
+        Optional<User> sessionUser = sessionService.findByAuthorizationHeader(authHeader);
+        boolean admin = sessionUser
+            .map(user -> "ADMIN".equalsIgnoreCase(user.getRole()))
+            .orElse(false);
+
+        String requestedRole = req.getRole() != null ? req.getRole().trim() : "";
+        if (!admin) {
+            // El registro público no puede elevar privilegios
+            if (!requestedRole.isEmpty() && !"OPERATOR".equalsIgnoreCase(requestedRole)) {
+                return error(HttpStatus.FORBIDDEN, "Solo el administrador puede asignar roles distintos de OPERATOR.");
+            }
+            req.setRole("OPERATOR");
+        }
+
+        try {
+            User created = userService.register(req);
+            return ResponseEntity.status(HttpStatus.CREATED).body(UserResponse.from(created));
+        } catch (IllegalArgumentException e) {
+            return error(HttpStatus.BAD_REQUEST, e.getMessage());
+        } catch (IllegalStateException e) {
+            return error(HttpStatus.CONFLICT, e.getMessage());
+        }
+    }
+
+    // ====== CAMBIO DE ROL ======
+
+    @PatchMapping("/{id}/role")
+    public ResponseEntity<?> updateUserRole(
+            @PathVariable Long id,
+            @RequestBody Map<String, String> body,
+            @RequestHeader(value = "Authorization", required = false) String authHeader) {
+
+        Optional<User> sessionUser = sessionService.findByAuthorizationHeader(authHeader);
+        if (sessionUser.isEmpty()) {
+            return error(HttpStatus.UNAUTHORIZED, "Debes iniciar sesión para cambiar el rol de un usuario.");
+        }
+        if (!isAdmin(sessionUser)) {
+            return error(HttpStatus.FORBIDDEN, "Solo el administrador puede cambiar el rol de los usuarios.");
+        }
+
+        return applyRoleChange(id, body.get("role"));
+    }
+
+    // ====== APOYO ======
+
+    private boolean isAdmin(Optional<User> sessionUser) {
+        return sessionUser
+            .map(user -> "ADMIN".equalsIgnoreCase(user.getRole()))
+            .orElse(false);
+    }
+
+    private ResponseEntity<?> applyRoleChange(Long userId, String role) {
+        try {
+            User updated = userService.changeRole(userId, role);
+            return ResponseEntity.ok(UserResponse.from(updated));
+        } catch (IllegalArgumentException e) {
+            return error(HttpStatus.BAD_REQUEST, e.getMessage());
+        } catch (EntityNotFoundException e) {
+            return error(HttpStatus.NOT_FOUND, e.getMessage());
+        }
     }
 
     private ResponseEntity<Map<String, Object>> error(HttpStatus status, String message) {
