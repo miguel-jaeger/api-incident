@@ -61,7 +61,7 @@ public class IncidentController {
 
     // ====== ENDPOINTS DE ESTADÍSTICAS Y MÉTRICAS ======
 
-    @GetMapping("/count")
+    @GetMapping("/stats/count")
     public Map<String, Long> getCount() {
         return Map.of("total", svc.countTotal());
     }
