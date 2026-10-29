@@ -16,5 +16,8 @@ public class SwaggerRedirectConfig implements WebMvcConfigurer {
         // Si alguien entra por las rutas internas de Swagger, vuelve a la raíz
         registry.addRedirectViewController("/swagger-ui.html", "/");
         registry.addRedirectViewController("/swagger-ui/index.html", "/");
+
+        // Compatibilidad: la ruta antigua del contrato OpenAPI redirige a la nueva
+        registry.addRedirectViewController("/v3/api-docs", "/openapi.json");
     }
 }

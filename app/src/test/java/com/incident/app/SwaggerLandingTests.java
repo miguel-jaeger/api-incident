@@ -34,7 +34,7 @@ class SwaggerLandingTests {
         assertEquals(200, response.statusCode());
         assertTrue(response.headers().firstValue("content-type").orElse("").startsWith("text/html"));
         assertTrue(response.body().contains("<base href=\"/swagger-ui/\">"));
-        assertTrue(response.body().contains("url: \"/v3/api-docs\""));
+        assertTrue(response.body().contains("url: \"/openapi.json\""));
     }
 
     @Test
@@ -73,6 +73,25 @@ class SwaggerLandingTests {
 
         assertEquals(200, response.statusCode());
         assertTrue(response.headers().firstValue("content-type").orElse("").startsWith("text/css"));
+    }
+
+    @Test
+    void elContratoOpenApiEstaEnUnaRutaClara() throws Exception {
+        HttpResponse<String> response = get("/openapi.json");
+
+        assertEquals(200, response.statusCode());
+        assertTrue(response.headers().firstValue("content-type").orElse("").startsWith("application/json"));
+        assertTrue(response.body().contains("\"openapi\""));
+        assertTrue(response.body().contains("\"/api/users\""));
+    }
+
+    @Test
+    void laRutaAntiguaDelContratoOpenApiRedirige() throws Exception {
+        HttpResponse<String> response = get("/v3/api-docs");
+
+        assertEquals(302, response.statusCode());
+        String location = response.headers().firstValue("location").orElse("");
+        assertEquals("/openapi.json", URI.create(location).getPath());
     }
 
     private HttpResponse<String> get(String path) throws Exception {

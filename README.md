@@ -7,6 +7,9 @@ API para la gestión de incidentes de la Mesa Operativa Campus UTP.
 Swagger UI está disponible directamente en `/` y `/docs`, sin redirigir la
 barra de direcciones a `/swagger-ui/index.html`.
 
+El contrato OpenAPI en formato JSON se publica en `/openapi.json`. La ruta
+antigua `/v3/api-docs` redirige a la nueva ruta.
+
 ## Autenticación
 
 La autenticación se realiza contra la tabla `users` de SQLite. Las contraseñas se
@@ -29,6 +32,8 @@ aplicación (`spring.jpa.hibernate.ddl-auto=update`).
 | POST | `/api/users` | Registra un nuevo usuario | Público, solo crea `OPERATOR`; `ADMIN` puede asignar otros roles |
 | GET | `/api/users/{id}` | Obtiene un usuario por id | Solo `ADMIN` |
 | PATCH | `/api/users/{id}/role` | Cambia el rol de un usuario | Solo `ADMIN` |
+| PATCH | `/api/users/{id}/password` | Cambia la contraseña de un usuario | El propio usuario con su contraseña actual, o `ADMIN` para cualquiera |
+| DELETE | `/api/users/{id}` | Elimina un usuario | Solo `ADMIN` |
 
 Ejemplo de registro:
 
@@ -59,6 +64,22 @@ Authorization: Bearer utp-token-...
 El cambio se aplica de inmediato, incluso sobre tokens ya emitidos para ese
 usuario. `PATCH /api/users/{id}/role` es la única vía para actualizar el rol; no
 existen rutas duplicadas bajo `/api/auth`.
+
+Ejemplo para cambiar la propia contraseña:
+
+```json
+PATCH /api/users/5/password
+Authorization: Bearer utp-token-...
+
+{
+  "currentPassword": "clave123",
+  "newPassword": "nuevaClave123"
+}
+```
+
+Un `ADMIN` puede omitir `currentPassword` al cambiar la contraseña de otro
+usuario. Para eliminar un usuario, el `ADMIN` usa `DELETE /api/users/{id}` y
+recibe `204 No Content`.
 
 ### Usuarios iniciales
 

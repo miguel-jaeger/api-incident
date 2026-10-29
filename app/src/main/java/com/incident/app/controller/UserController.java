@@ -117,6 +117,65 @@ public class UserController {
         return applyRoleChange(id, body.get("role"));
     }
 
+    // ====== CAMBIO DE CONTRASEÑA ======
+
+    @PatchMapping("/{id}/password")
+    public ResponseEntity<?> updatePassword(
+            @PathVariable Long id,
+            @RequestBody Map<String, String> body,
+            @RequestHeader(value = "Authorization", required = false) String authHeader) {
+
+        Optional<User> sessionUser = sessionService.findByAuthorizationHeader(authHeader);
+        if (sessionUser.isEmpty()) {
+            return error(HttpStatus.UNAUTHORIZED, "Debes iniciar sesión para cambiar una contraseña.");
+        }
+
+        boolean self = sessionUser.get().getId().equals(id);
+        if (!self && !isAdmin(sessionUser)) {
+            return error(HttpStatus.FORBIDDEN, "Solo puedes cambiar tu propia contraseña o debes ser administrador.");
+        }
+
+        String currentPassword = body.get("currentPassword") != null
+            ? body.get("currentPassword")
+            : body.get("oldPassword");
+        String newPassword = body.get("newPassword") != null
+            ? body.get("newPassword")
+            : body.get("password");
+
+        try {
+            // Para la propia contraseña se exige la actual; un ADMIN puede cambiarla a otro usuario sin ella.
+            User updated = userService.changePassword(id, currentPassword, newPassword, self);
+            return ResponseEntity.ok(UserResponse.from(updated));
+        } catch (IllegalArgumentException e) {
+            return error(HttpStatus.BAD_REQUEST, e.getMessage());
+        } catch (EntityNotFoundException e) {
+            return error(HttpStatus.NOT_FOUND, e.getMessage());
+        }
+    }
+
+    // ====== ELIMINACIÓN DE USUARIOS ======
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> delete(
+            @PathVariable Long id,
+            @RequestHeader(value = "Authorization", required = false) String authHeader) {
+
+        Optional<User> sessionUser = sessionService.findByAuthorizationHeader(authHeader);
+        if (sessionUser.isEmpty()) {
+            return error(HttpStatus.UNAUTHORIZED, "Debes iniciar sesión para eliminar usuarios.");
+        }
+        if (!isAdmin(sessionUser)) {
+            return error(HttpStatus.FORBIDDEN, "Solo el administrador puede eliminar usuarios.");
+        }
+
+        try {
+            userService.deleteUser(id);
+            return ResponseEntity.noContent().build();
+        } catch (EntityNotFoundException e) {
+            return error(HttpStatus.NOT_FOUND, e.getMessage());
+        }
+    }
+
     // ====== APOYO ======
 
     private boolean isAdmin(Optional<User> sessionUser) {
