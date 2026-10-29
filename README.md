@@ -7,6 +7,9 @@ API para la gestión de incidentes de la Mesa Operativa Campus UTP.
 Swagger UI está disponible directamente en `/` y `/docs`, sin redirigir la
 barra de direcciones a `/swagger-ui/index.html`.
 
+El contrato OpenAPI en formato JSON se publica en `/openapi.json`. La ruta
+antigua `/v3/api-docs` redirige a la nueva ruta.
+
 ## Autenticación
 
 La autenticación se realiza contra la tabla `users` de SQLite. Las contraseñas se
