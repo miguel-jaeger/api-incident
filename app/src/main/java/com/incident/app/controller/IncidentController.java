@@ -44,7 +44,7 @@ public class IncidentController {
 
         String severity = body.get("severity") != null
             ? String.valueOf(body.get("severity"))
-            : (body.get("priority") != null ? String.valueOf(body.get("priority")) : "Medium");
+            : (body.get("priority") != null ? String.valueOf(body.get("priority")) : "Low");
 
         String message = body.get("message") != null
             ? String.valueOf(body.get("message"))
@@ -85,6 +85,29 @@ public class IncidentController {
 
         String message = body.get("message") != null ? body.get("message") : body.get("rejectionReason");
         return ResponseEntity.ok(svc.changeStatus(id, status, message));
+    }
+
+    // Solo el administrador puede actualizar la prioridad de un incidente
+    @PatchMapping("/{id}/priority")
+    public ResponseEntity<?> updatePriority(
+            @PathVariable Long id,
+            @RequestBody Map<String, String> body,
+            @RequestHeader(value = "Authorization", required = false) String authHeader) {
+
+        Optional<User> sessionUser = sessionService.findByAuthorizationHeader(authHeader);
+        if (sessionUser.isEmpty()) {
+            return error(HttpStatus.UNAUTHORIZED, "Debes iniciar sesión para actualizar la prioridad de un incidente.");
+        }
+        if (!"ADMIN".equalsIgnoreCase(sessionUser.get().getRole())) {
+            return error(HttpStatus.FORBIDDEN, "Solo el administrador puede actualizar la prioridad de un incidente.");
+        }
+
+        String priority = body.get("priority") != null ? body.get("priority") : body.get("severity");
+        if (priority == null || priority.isBlank()) {
+            return error(HttpStatus.BAD_REQUEST, "El campo 'priority' es obligatorio.");
+        }
+
+        return ResponseEntity.ok(svc.changePriority(id, priority));
     }
 
     @GetMapping()

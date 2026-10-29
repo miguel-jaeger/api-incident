@@ -34,7 +34,7 @@ public class IncidentService {
         Incident inc = new Incident();
         inc.setTitle(title);
         inc.setDescription(desc);
-        inc.setSeverity(severity != null && !severity.trim().isEmpty() ? severity : "Medium");
+        inc.setSeverity(severity != null && !severity.trim().isEmpty() ? severity : "Low");
         inc.setStatus(status != null && !status.trim().isEmpty() ? status : "Active");
         inc.setMessage(message);
         inc.setCategory(category != null && !category.trim().isEmpty() ? category : "General");
@@ -57,6 +57,24 @@ public class IncidentService {
             inc.setMessage(message != null ? message : null);
         }
 
+        inc.setUpdatedAt(LocalDateTime.now());
+        repo.save(inc);
+
+        // Forzar sincronización con la base de datos
+        em.flush();
+        em.clear();
+
+        // Devolver entidad actualizada desde la base
+        return repo.findById(id)
+            .orElseThrow(() -> new EntityNotFoundException("Incident not found after update"));
+    }
+
+    @Transactional
+    public Incident changePriority(Long id, String newPriority) {
+        Incident inc = repo.findById(id)
+            .orElseThrow(() -> new EntityNotFoundException("Incident not found with id " + id));
+
+        inc.setSeverity(newPriority);
         inc.setUpdatedAt(LocalDateTime.now());
         repo.save(inc);
 
@@ -100,7 +118,7 @@ public class IncidentService {
         List<Incident> all = repo.findAll();
         return all.stream()
             .collect(Collectors.groupingBy(
-                i -> (i.getSeverity() != null && !i.getSeverity().trim().isEmpty()) ? i.getSeverity() : "Medium",
+                i -> (i.getSeverity() != null && !i.getSeverity().trim().isEmpty()) ? i.getSeverity() : "Low",
                 LinkedHashMap::new,
                 Collectors.counting()
             ));
