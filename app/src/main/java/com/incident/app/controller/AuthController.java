@@ -14,9 +14,13 @@ import com.incident.app.model.User;
 import com.incident.app.service.AuthSessionService;
 import com.incident.app.service.UserService;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 @CrossOrigin(origins = "*")
 @RestController
 @RequestMapping("/api/auth")
+@Tag(name = "Autenticación", description = "Inicio de sesión, sesión actual y cierre de sesión")
 public class AuthController {
 
     private final UserService userService;
@@ -29,6 +33,7 @@ public class AuthController {
 
     // ====== INICIO DE SESIÓN ======
 
+    @Operation(summary = "Iniciar sesión", description = "Autentica por usuario o correo y devuelve un token.")
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest req) {
         String identifier = req.getUsername() != null ? req.getUsername().trim() : "";
@@ -53,6 +58,7 @@ public class AuthController {
 
     // ====== SESIÓN ACTUAL ======
 
+    @Operation(summary = "Obtener sesión actual", description = "Devuelve el usuario asociado al token.")
     @GetMapping("/me")
     public ResponseEntity<?> getCurrentUser(@RequestHeader(value = "Authorization", required = false) String authHeader) {
         Optional<User> sessionUser = sessionService.findByAuthorizationHeader(authHeader);
@@ -77,6 +83,7 @@ public class AuthController {
 
     // ====== CIERRE DE SESIÓN ======
 
+    @Operation(summary = "Cerrar sesión", description = "Invalida el token actual.")
     @PostMapping("/logout")
     public ResponseEntity<?> logout(@RequestHeader(value = "Authorization", required = false) String authHeader) {
         sessionService.invalidate(authHeader);

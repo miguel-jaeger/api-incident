@@ -14,11 +14,14 @@ import com.incident.app.model.User;
 import com.incident.app.service.AuthSessionService;
 import com.incident.app.service.UserService;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.persistence.EntityNotFoundException;
 
 @CrossOrigin(origins = "*")
 @RestController
 @RequestMapping("/api/users")
+@Tag(name = "Usuarios", description = "Consulta, creación, roles, contraseña y eliminación de usuarios")
 public class UserController {
 
     private final UserService userService;
@@ -31,6 +34,7 @@ public class UserController {
 
     // ====== CONSULTA DE USUARIOS ======
 
+    @Operation(summary = "Listar usuarios", description = "Solo ADMIN.")
     @GetMapping
     public ResponseEntity<?> all(@RequestHeader(value = "Authorization", required = false) String authHeader) {
         Optional<User> sessionUser = sessionService.findByAuthorizationHeader(authHeader);
@@ -47,6 +51,7 @@ public class UserController {
         return ResponseEntity.ok(users);
     }
 
+    @Operation(summary = "Obtener usuario por id", description = "Solo ADMIN.")
     @GetMapping("/{id}")
     public ResponseEntity<?> getById(
             @PathVariable Long id,
@@ -69,6 +74,10 @@ public class UserController {
 
     // ====== CREACIÓN DE USUARIOS ======
 
+    @Operation(
+        summary = "Crear usuario",
+        description = "Registro público: crea un usuario OPERATOR. Un ADMIN puede asignar cualquier rol."
+    )
     @PostMapping
     public ResponseEntity<?> create(
             @RequestBody RegisterUserRequest req,
@@ -100,6 +109,7 @@ public class UserController {
 
     // ====== CAMBIO DE ROL ======
 
+    @Operation(summary = "Cambiar rol de usuario", description = "Solo ADMIN.")
     @PatchMapping("/{id}/role")
     public ResponseEntity<?> updateUserRole(
             @PathVariable Long id,
@@ -119,6 +129,10 @@ public class UserController {
 
     // ====== CAMBIO DE CONTRASEÑA ======
 
+    @Operation(
+        summary = "Cambiar contraseña",
+        description = "El propio usuario debe enviar currentPassword. Un ADMIN puede cambiar la contraseña de cualquier usuario."
+    )
     @PatchMapping("/{id}/password")
     public ResponseEntity<?> updatePassword(
             @PathVariable Long id,
@@ -155,6 +169,7 @@ public class UserController {
 
     // ====== ELIMINACIÓN DE USUARIOS ======
 
+    @Operation(summary = "Eliminar usuario", description = "Solo ADMIN. Devuelve 204 si se elimina correctamente.")
     @DeleteMapping("/{id}")
     public ResponseEntity<?> delete(
             @PathVariable Long id,
