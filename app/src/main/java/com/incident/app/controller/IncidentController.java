@@ -14,9 +14,12 @@ import com.incident.app.model.User;
 import com.incident.app.service.AuthSessionService;
 import com.incident.app.service.IncidentService;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 @CrossOrigin(origins = "*")
 @RestController
 @RequestMapping("/api/incidents")
+@Tag(name = "Incidentes", description = "Gestión de incidentes y estadísticas")
 public class IncidentController {
 
     @Autowired

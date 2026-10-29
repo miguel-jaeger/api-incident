@@ -1,6 +1,7 @@
 package com.incident.app;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.net.URI;
@@ -12,6 +13,9 @@ import java.time.Duration;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @SpringBootTest(
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
@@ -83,6 +87,20 @@ class SwaggerLandingTests {
         assertTrue(response.headers().firstValue("content-type").orElse("").startsWith("application/json"));
         assertTrue(response.body().contains("\"openapi\""));
         assertTrue(response.body().contains("\"/api/users\""));
+    }
+
+    @Test
+    void elContratoAgrupaYEliminaUsuariosBajoElTagUsuarios() throws Exception {
+        HttpResponse<String> response = get("/openapi.json");
+        JsonNode root = new ObjectMapper().readTree(response.body());
+
+        JsonNode deleteUser = root.get("paths").get("/api/users/{id}").get("delete");
+        assertNotNull(deleteUser);
+        assertEquals("Eliminar usuario", deleteUser.get("summary").asText());
+        assertTrue(deleteUser.get("tags").toString().contains("Usuarios"));
+
+        JsonNode listUsers = root.get("paths").get("/api/users").get("get");
+        assertTrue(listUsers.get("tags").toString().contains("Usuarios"));
     }
 
     @Test
