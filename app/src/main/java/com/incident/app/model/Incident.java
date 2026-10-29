@@ -1,9 +1,7 @@
 package com.incident.app.model;
 
 import java.time.LocalDateTime;
-
 import jakarta.persistence.*;
-
 
 @Entity
 public class Incident {
@@ -12,11 +10,13 @@ public class Incident {
     private String title;
     private String description;
     private String message;
-    private String status; // por ejemplo: OPEN, IN_PROGRESS, RESOLVED, CLOSED
-    private String severity;
+    private String status; // por ejemplo: OPEN, IN_PROGRESS, RESOLVED, CLOSED, Active, Inactive
+    private String severity; // High, Medium, Low
+    private String category; // Redes, Hardware, Software, Seguridad, Infraestructura, General
+    private String location; // Lima Centro, Pabellón A, etc.
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-    // getters/setters
+
     public Long getId() {
         return id;
     }
@@ -46,6 +46,29 @@ public class Incident {
     }
     public void setSeverity(String severity) {
         this.severity = severity;
+    }
+    // Alias para priority compatible con frontend
+    public String getPriority() {
+        return severity;
+    }
+    public void setPriority(String priority) {
+        this.severity = priority;
+    }
+    public String getCategory() {
+        return category != null && !category.trim().isEmpty() ? category : "General";
+    }
+    public void setCategory(String category) {
+        this.category = category;
+    }
+    public String getLocation() {
+        return location != null && !location.trim().isEmpty() ? location : "Campus UTP";
+    }
+    public void setLocation(String location) {
+        this.location = location;
+    }
+    public String getTicketCode() {
+        if (id == null) return "INC-NEW";
+        return "INC-" + (1000 + id);
     }
     public LocalDateTime getCreatedAt() {
         return createdAt;
