@@ -85,11 +85,6 @@ public class UserService {
             .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado con id " + id));
     }
 
-    public User findByUsername(String username) {
-        return repo.findByUsernameIgnoreCase(trim(username))
-            .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado: " + username));
-    }
-
     public User changeRole(Long id, String role) {
         if (id == null) {
             throw new IllegalArgumentException("El id del usuario es obligatorio.");
