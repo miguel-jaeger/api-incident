@@ -10,12 +10,16 @@ aplicación (`spring.jpa.hibernate.ddl-auto=update`).
 
 ### Endpoints
 
-| Método | Ruta | Descripción |
-|--------|------|-------------|
-| POST | `/api/auth/login` | Inicia sesión con usuario o correo |
-| POST | `/api/auth/users` | Registra un nuevo usuario |
-| GET | `/api/auth/me` | Devuelve el usuario del token actual |
-| POST | `/api/auth/logout` | Cierra la sesión del token actual |
+| Método | Ruta | Descripción | Autorización |
+|--------|------|-------------|--------------|
+| POST | `/api/auth/login` | Inicia sesión con usuario o correo | Público |
+| POST | `/api/auth/users` | Registra un nuevo usuario | Público, solo crea `OPERATOR`; `ADMIN` puede asignar otros roles |
+| GET | `/api/users` | Lista todos los usuarios | Solo `ADMIN` |
+| GET | `/api/auth/users/{id}` | Obtiene un usuario por id | Solo `ADMIN` |
+| PATCH/PUT/POST | `/api/auth/roles` | Cambia el rol de un usuario | Solo `ADMIN` |
+| PATCH | `/api/auth/users/{id}/role` | Alias para cambiar el rol | Solo `ADMIN` |
+| GET | `/api/auth/me` | Devuelve el usuario del token actual | Token válido |
+| POST | `/api/auth/logout` | Cierra la sesión del token actual | Token válido |
 
 Ejemplo de registro:
 
@@ -31,6 +35,22 @@ POST /api/auth/users
 ```
 
 Roles permitidos: `ADMIN`, `SUPERVISOR`, `OPERATOR`, `SUPPORT`.
+
+Ejemplo para cambiar el rol de un usuario (solo `ADMIN`):
+
+```json
+PATCH /api/auth/roles
+Authorization: Bearer utp-token-...
+
+{
+  "userId": 5,
+  "role": "SUPERVISOR"
+}
+```
+
+También se aceptan `id` en lugar de `userId`, `username` en lugar del id y
+`newRole` en lugar de `role`. El cambio se aplica de inmediato, incluso sobre
+tokens ya emitidos para ese usuario.
 
 ### Usuarios iniciales
 
@@ -49,13 +69,24 @@ Authorization: Bearer utp-token-...
 
 ## Incidentes
 
+| Método | Ruta | Descripción | Autorización |
+|--------|------|-------------|--------------|
+| GET | `/api/incidents` | Lista los incidentes | Público |
+| POST | `/api/incidents` | Crea un incidente | Cualquier usuario autenticado |
+| GET | `/api/incidents/{id}` | Obtiene un incidente | Público |
+| PATCH | `/api/incidents/{id}/status` | Actualiza el estado | Solo `ADMIN` |
+| DELETE | `/api/incidents/{id}` | Elimina un incidente | Público |
+Para publicar un incidente o actualizar su estado debes enviar el token del login:
+
+```
+Authorization: Bearer utp-token-...
+```
+
+- Sin token: `401 Unauthorized`.
+- Token válido pero rol distinto de `ADMIN` al cambiar el estado: `403 Forbidden`.
+
 | Método | Ruta | Descripción |
 |--------|------|-------------|
-| GET | `/api/incidents` | Lista los incidentes |
-| POST | `/api/incidents` | Crea un incidente |
-| GET | `/api/incidents/{id}` | Obtiene un incidente |
-| PATCH | `/api/incidents/{id}/status` | Actualiza el estado |
-| DELETE | `/api/incidents/{id}` | Elimina un incidente |
 | GET | `/api/incidents/stats` | Estadísticas generales |
 | GET | `/api/incidents/stats/count` | Total de incidentes |
 | GET | `/api/incidents/stats/total` | Total de incidentes |
