@@ -8,19 +8,26 @@ import java.util.concurrent.ConcurrentMap;
 import org.springframework.stereotype.Service;
 
 import com.incident.app.model.User;
+import com.incident.app.repository.UserRepository;
 
 /**
  * Mantiene las sesiones activas en memoria. Cada token emitido en el login
- * queda asociado al usuario de la base de datos.
+ * queda asociado al id del usuario; el usuario se consulta desde SQLite en
+ * cada petición para reflejar cambios de rol de inmediato.
  */
 @Service
 public class AuthSessionService {
 
-    private final ConcurrentMap<String, User> sessions = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, Long> sessions = new ConcurrentHashMap<>();
+    private final UserRepository userRepository;
+
+    public AuthSessionService(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
 
     public String createSession(User user) {
         String token = "utp-token-" + UUID.randomUUID();
-        sessions.put(token, user);
+        sessions.put(token, user.getId());
         return token;
     }
 
@@ -29,7 +36,12 @@ public class AuthSessionService {
         if (token == null) {
             return Optional.empty();
         }
-        return Optional.ofNullable(sessions.get(token));
+
+        Long userId = sessions.get(token);
+        if (userId == null) {
+            return Optional.empty();
+        }
+        return userRepository.findById(userId);
     }
 
     public void invalidate(String authHeader) {

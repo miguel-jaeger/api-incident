@@ -1,6 +1,7 @@
 package com.incident.app.service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.Set;
@@ -12,6 +13,8 @@ import org.springframework.stereotype.Service;
 import com.incident.app.dto.RegisterUserRequest;
 import com.incident.app.model.User;
 import com.incident.app.repository.UserRepository;
+
+import jakarta.persistence.EntityNotFoundException;
 
 @Service
 public class UserService {
@@ -70,6 +73,38 @@ public class UserService {
         user.setRole(role);
         user.setCreatedAt(LocalDateTime.now());
 
+        return repo.save(user);
+    }
+
+    public List<User> listAll() {
+        return repo.findAll();
+    }
+
+    public User findById(Long id) {
+        return repo.findById(id)
+            .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado con id " + id));
+    }
+
+    public User findByUsername(String username) {
+        return repo.findByUsernameIgnoreCase(trim(username))
+            .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado: " + username));
+    }
+
+    public User changeRole(Long id, String role) {
+        if (id == null) {
+            throw new IllegalArgumentException("El id del usuario es obligatorio.");
+        }
+
+        String normalizedRole = trim(role).toUpperCase(Locale.ROOT);
+        if (normalizedRole.isEmpty()) {
+            throw new IllegalArgumentException("El rol es obligatorio.");
+        }
+        if (!ALLOWED_ROLES.contains(normalizedRole)) {
+            throw new IllegalArgumentException("Rol inválido. Valores permitidos: ADMIN, SUPERVISOR, OPERATOR, SUPPORT.");
+        }
+
+        User user = findById(id);
+        user.setRole(normalizedRole);
         return repo.save(user);
     }
 
