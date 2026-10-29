@@ -2,6 +2,11 @@
 
 API para la gestión de incidentes de la Mesa Operativa Campus UTP.
 
+## Documentación
+
+Swagger UI está disponible directamente en `/` y `/docs`, sin redirigir la
+barra de direcciones a `/swagger-ui/index.html`.
+
 ## Autenticación
 
 La autenticación se realiza contra la tabla `users` de SQLite. Las contraseñas se
