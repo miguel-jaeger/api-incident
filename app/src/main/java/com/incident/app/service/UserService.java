@@ -103,6 +103,40 @@ public class UserService {
         return repo.save(user);
     }
 
+    public User changePassword(Long id, String currentPassword, String newPassword, boolean requireCurrentPassword) {
+        if (id == null) {
+            throw new IllegalArgumentException("El id del usuario es obligatorio.");
+        }
+
+        String newPass = newPassword != null ? newPassword : "";
+        if (newPass.isEmpty()) {
+            throw new IllegalArgumentException("La nueva contraseña es obligatoria.");
+        }
+        if (newPass.length() < 6) {
+            throw new IllegalArgumentException("La nueva contraseña debe tener al menos 6 caracteres.");
+        }
+
+        User user = findById(id);
+
+        if (requireCurrentPassword) {
+            String currentPass = currentPassword != null ? currentPassword : "";
+            if (currentPass.isEmpty()) {
+                throw new IllegalArgumentException("La contraseña actual es obligatoria.");
+            }
+            if (!passwordEncoder.matches(currentPass, user.getPassword())) {
+                throw new IllegalArgumentException("La contraseña actual es incorrecta.");
+            }
+        }
+
+        user.setPassword(passwordEncoder.encode(newPass));
+        return repo.save(user);
+    }
+
+    public void deleteUser(Long id) {
+        User user = findById(id);
+        repo.delete(user);
+    }
+
     public User authenticate(String usernameOrEmail, String password) {
         if (usernameOrEmail == null || usernameOrEmail.isBlank() || password == null) {
             return null;
