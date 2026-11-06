@@ -320,3 +320,5 @@ Respuesta de `GET /api/incidents/stats`:
 `active` agrupa los estados `Active`, `OPEN` e `IN_PROGRESS`; `inactive` agrupa
 `Inactive`, `CLOSED` y `RESOLVED`. Los conteos por categoría, severidad y estado
 son mapas de `valor → cantidad`.
+
+#test
