@@ -26,12 +26,17 @@ jobs:
       - name: Ejecutar pruebas
         working-directory: app
         run: mvn test
+
   deploy:
     runs-on: ubuntu-latest
+    needs: test # Asegura que solo corra si las pruebas pasan
 
     steps:     
+      # 4a. Paso 1 del deploy: Preparar o notificar el inicio del despliegue
+      - name: Preparar despliegue
+        run: echo "Iniciando proceso de despliegue hacia Render..."
 
-      # 4. Llama al deploy hook de Render usando el secret de GitHub
+      # 4b. Paso 2 del deploy: Llamar al deploy hook de Render usando el secret de GitHub
       - name: Desplegar en Render
         env:
           RENDER_DEPLOY_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}
