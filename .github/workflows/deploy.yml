@@ -7,8 +7,8 @@ on:
       - main
 
 jobs:
-  deploy:
-    runs-on: ubuntu-latest
+  test:
+    runs-on: ubuntu-latest    
 
     steps:
       # 1. Descarga el código del repositorio
@@ -26,6 +26,10 @@ jobs:
       - name: Ejecutar pruebas
         working-directory: app
         run: mvn test
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:     
 
       # 4. Llama al deploy hook de Render usando el secret de GitHub
       - name: Desplegar en Render
