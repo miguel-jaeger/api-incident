@@ -66,7 +66,7 @@ class AuthControllerTests {
     void loginPorCorreoElectronicoTambienEsValido() throws Exception {
         mockMvc.perform(post("/api/auth/login")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(json(Map.of("email", "admin@utp.edu.pe", "password", "admin1234"))))
+                .content(json(Map.of("email", "admin@utp.edu.pe", "password", "admin123"))))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.authenticated").value(true))
             .andExpect(jsonPath("$.token").isNotEmpty())
