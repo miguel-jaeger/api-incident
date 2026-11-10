@@ -28,7 +28,7 @@ jobs:
         run: mvn test
 
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: debian-latest
     needs: test # Asegura que solo corra si las pruebas pasan
 
     steps:     
