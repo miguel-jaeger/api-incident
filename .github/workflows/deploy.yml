@@ -8,7 +8,7 @@ on:
 
 jobs:
   test:
-    runs-on: debian-latest    
+    runs-on: ubuntu-latest    
 
     steps:
       # 1. Descarga el código del repositorio
@@ -28,7 +28,7 @@ jobs:
         run: mvn test
 
   deploy:
-    runs-on: debian-latest
+    runs-on: ubuntu-latest
     needs: test # Asegura que solo corra si las pruebas pasan
 
     steps:     
