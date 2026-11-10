@@ -48,7 +48,7 @@ class AuthControllerTests {
     void loginConCredencialesValidasDevuelveTokenYPerfil() throws Exception {
         mockMvc.perform(post("/api/auth/login")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(json(Map.of("username", "admin", "password", "admin123"))))
+                .content(json(Map.of("username", "admin", "password", "admin1234"))))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.authenticated").value(true))
             .andExpect(jsonPath("$.token").isNotEmpty())
