@@ -8,7 +8,7 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-latest    
+    runs-on: debian-latest    
 
     steps:
       # 1. Descarga el código del repositorio
